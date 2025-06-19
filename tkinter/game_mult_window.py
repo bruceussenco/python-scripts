@@ -1,4 +1,5 @@
 import tkinter as tk
+import math
 
 class Screen:
     def __init__(self, window, canvas):
@@ -20,7 +21,6 @@ def line_all(a, b):
     for screen in screens:
         x = screen.window.winfo_x()
         y = screen.window.winfo_y()
-        print(x, y)
 
         screen.canvas.create_line((a[0] - x, a[1] - y), (b[0] - x, b[1] - y), width=2, fill="red")
         
@@ -41,5 +41,18 @@ new_screen(320, 200); new_screen(640, 200); new_screen(960, 200)
 new_screen(320, 400); new_screen(640, 400); new_screen(960, 400)
 new_screen(320, 600); new_screen(640, 600); new_screen(960, 600)
 
+def game_loop():
+    global current_time
+    for screen in screens:
+        newx = math.floor(screen.window.winfo_x() + 5*math.cos(current_time/1000))
+        newy = math.floor(screen.window.winfo_y() + 5*math.sin(current_time/1000))
+        
+        screen.window.geometry(f"+{newx}+{newy}")
+
+    current_time += 100
+    root.after(100, game_loop)
+
+current_time = 0
+root.after(100, game_loop)
 
 root.mainloop()
