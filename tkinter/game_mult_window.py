@@ -6,6 +6,10 @@ class Screen:
         self.window = window
         self.canvas = canvas
 
+class Line:
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
 
 def new_screen(x=0, y=0):
     window = tk.Toplevel()
@@ -17,13 +21,7 @@ def new_screen(x=0, y=0):
 
     screens.append(Screen(window, canvas))
 
-def line_all(a, b):
-    for screen in screens:
-        x = screen.window.winfo_x()
-        y = screen.window.winfo_y()
-
-        screen.canvas.create_line((a[0] - x, a[1] - y), (b[0] - x, b[1] - y), width=2, fill="red")
-        
+def add_line(a, b): lines.append(Line(a, b))
     
 WIDTH = 320
 HEIGHT = 200
@@ -33,26 +31,59 @@ root.geometry(f"{WIDTH}x{HEIGHT}")
 root.title("Game")
 
 tk.Button(root, text="Quit", command=root.destroy).pack() 
-tk.Button(root, text="Add Line", command=lambda: line_all((100, 100), (1700, 700))).pack()
+
+# move screen
+x_offset = 0
+y_offset = 0
+def add_offset(x, y):
+    global x_offset, y_offset
+    x_offset += x
+    y_offset += y
+tk.Button(root, text="^", command=lambda: add_offset(  0, -10)).pack() 
+tk.Button(root, text=">", command=lambda: add_offset( 10,   0)).pack() 
+tk.Button(root, text="<", command=lambda: add_offset(-10,   0)).pack() 
+tk.Button(root, text="v", command=lambda: add_offset(  0,  10)).pack() 
 
 screens = []
+lines   = []
 
-new_screen(320, 200); new_screen(640, 200); new_screen(960, 200)
-new_screen(320, 400); new_screen(640, 400); new_screen(960, 400)
-new_screen(320, 600); new_screen(640, 600); new_screen(960, 600)
+new_screen(320, 200); new_screen(640, 200)
+new_screen(320, 400); new_screen(640, 400)
+
+def game_init():
+    add_line((100, 100), (1700, 700))
+    add_line((800, 300), ( 100, 900))
 
 def game_loop():
-    global current_time
+    global current_time, x_offset, y_offset
+
+    # clear canvas
+    for screen in screens: screen.canvas.delete("all")
+
+    # move screens / rendering
     for screen in screens:
-        newx = math.floor(screen.window.winfo_x() + 5*math.cos(current_time/1000))
-        newy = math.floor(screen.window.winfo_y() + 5*math.sin(current_time/1000))
+        x = screen.window.winfo_x() + x_offset
+        y = screen.window.winfo_y() + y_offset
         
-        screen.window.geometry(f"+{newx}+{newy}")
+        screen.window.geometry(f"+{x}+{y}")
+
+        # draw lines
+        for l in lines:
+            screen.canvas.create_line(
+                (l.a[0] - x, l.a[1] - y),
+                (l.b[0] - x, l.b[1] - y),
+                width=2, fill="red"
+            )
+    x_offset = 0
+    y_offset = 0
 
     current_time += 100
     root.after(100, game_loop)
 
+# game
 current_time = 0
+game_init()
 root.after(100, game_loop)
 
 root.mainloop()
+
