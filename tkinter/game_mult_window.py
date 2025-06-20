@@ -30,8 +30,6 @@ root = tk.Tk()
 root.geometry(f"{WIDTH}x{HEIGHT}")
 root.title("Game")
 
-tk.Button(root, text="Quit", command=root.destroy).pack() 
-
 # move screen
 x_offset = 0
 y_offset = 0
@@ -39,10 +37,10 @@ def add_offset(x, y):
     global x_offset, y_offset
     x_offset += x
     y_offset += y
-tk.Button(root, text="^", command=lambda: add_offset(  0, -10)).pack() 
-tk.Button(root, text=">", command=lambda: add_offset( 10,   0)).pack() 
-tk.Button(root, text="<", command=lambda: add_offset(-10,   0)).pack() 
-tk.Button(root, text="v", command=lambda: add_offset(  0,  10)).pack() 
+tk.Button(root, text="^", command=lambda:add_offset(0,-10)).grid(column=1, row=0)
+tk.Button(root, text="<", command=lambda:add_offset(-10,0)).grid(column=0, row=1)
+tk.Button(root, text="v", command=lambda:add_offset( 0,10)).grid(column=1, row=1)
+tk.Button(root, text=">", command=lambda:add_offset(10, 0)).grid(column=2, row=1)
 
 screens = []
 lines   = []
