@@ -6,6 +6,14 @@ from array import array
 image_path  = input("image path: ")
 output_path = "edited_" + image_path
 
+smoothstep_min = input("smoothstep_min: ")
+smoothstep_max = input("smoothstep_max: ")
+
+uv_shader_choice = input("""--- uv shader ---
+0. nothing
+1. uv -> rg
+: """)
+
 # ----- Início do Processamento Headless -----
 pygame.init()
 
@@ -50,20 +58,29 @@ vertex_shader_code = """
 #version 330 core
 in vec2 in_vert;
 in vec2 in_texcoord;
-out vec2 v_texcoord;
+out vec2 inv_uv;
 void main() {
     gl_Position = vec4(in_vert, 0.0, 1.0);
-    v_texcoord = in_texcoord;
+    inv_uv = in_texcoord;
 }
 """
 fragment_shader_code = """
 #version 330 core
 uniform sampler2D tex;
-in vec2 v_texcoord;
+in vec2 inv_uv;
 out vec4 out_color;
 void main() {
-    out_color = texture(tex, v_texcoord);
-    out_color = vec4(1.0 - out_color.rgb, out_color.a);
+    vec4 color = texture(tex, inv_uv);
+    vec2 uv = inv_uv;
+    uv.y = 1.0 - uv.y;
+
+    float gray = 0.2126*color.r + 0.7152*color.g + 0.0722*color.b;
+"""
+fragment_shader_code += f"color = vec4(vec3(smoothstep({smoothstep_min}, {smoothstep_max}, gray)), 1.0);"
+if uv_shader_choice == "1":
+    fragment_shader_code += "color.b *= 1.0 - uv.x;\ncolor.g *= 1.0 - uv.y;"
+fragment_shader_code += """
+    out_color = color;
 }
 """
 program = ctx.program(vertex_shader=vertex_shader_code, fragment_shader=fragment_shader_code)
